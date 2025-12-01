@@ -1,0 +1,231 @@
+<!-- PASO 9.3: Gestión de siembras -->
+<!-- Archivo: templates/siembras.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Siembras - AgroData{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-leaf"></i> Gestión de Siembras
+            <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#modalNuevaSiembra">
+                <i class="fas fa-plus"></i> Nueva Siembra
+            </button>
+        </h1>
+    </div>
+</div>
+
+<!-- Demostración de Estructura de Datos -->
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> 
+    <strong>Estructura de Datos:</strong> Las siembras se almacenan en una 
+    <strong>Lista Enlazada</strong> para gestión eficiente del historial.
+</div>
+
+<!-- Búsqueda de Siembras (Algoritmos) -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-search"></i> Buscar Siembra por ID
+            <span class="badge bg-light text-dark">Algoritmos: Búsqueda Lineal vs Binaria</span>
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="formBuscar">
+            <div class="row">
+                <div class="col-md-8">
+                    <input type="number" class="form-control" 
+                           id="id_siembra_buscar" 
+                           placeholder="Ingrese ID de siembra"
+                           required>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+        <div id="resultadoBusqueda" class="mt-3"></div>
+    </div>
+</div>
+
+<!-- Tabla de Siembras -->
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-list"></i> Lista de Siembras Registradas
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if siembras %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Lote</th>
+                        <th>Cultivo</th>
+                        <th>Fecha Siembra</th>
+                        <th>Área (ha)</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for siembra in siembras %}
+                    <tr>
+                        <td>{{ siembra.id_siembra }}</td>
+                        <td>{{ siembra.lote }}</td>
+                        <td>{{ siembra.cultivo }}</td>
+                        <td>{{ siembra.fecha_siembra }}</td>
+                        <td>{{ "%.2f"|format(siembra.area_sembrada) }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if siembra.estado == 'cosechado' %}bg-success
+                                {% elif siembra.estado == 'crecimiento' %}bg-info
+                                {% else %}bg-warning{% endif %}">
+                                {{ siembra.estado }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> No hay siembras registradas.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal: Nueva Siembra -->
+<div class="modal fade" id="modalNuevaSiembra" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-seedling"></i> Registrar Nueva Siembra
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('agregar_siembra') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Lote *</label>
+                        <select class="form-select" name="id_lote" required>
+                            <option value="">Seleccione un lote</option>
+                            {% for lote in lotes %}
+                            <option value="{{ lote.id_lote }}">
+                                {{ lote.nombre }} ({{ lote.area_hectareas }} ha)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cultivo *</label>
+                        <select class="form-select" name="id_cultivo" required>
+                            <option value="">Seleccione un cultivo</option>
+                            {% for cultivo in cultivos %}
+                            <option value="{{ cultivo.id_cultivo }}">
+                                {{ cultivo.nombre }} - {{ cultivo.variedad }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Siembra *</label>
+                        <input type="date" class="form-control" name="fecha_siembra" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Área Sembrada (hectáreas) *</label>
+                        <input type="number" step="0.01" class="form-control" 
+                               name="area_sembrada" placeholder="Ej: 10.5" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cantidad de Semilla (kg)</label>
+                        <input type="number" step="0.01" class="form-control" 
+                               name="cantidad_semilla" placeholder="Ej: 25.0">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Costo de Siembra ($)</label>
+                        <input type="number" step="0.01" class="form-control" 
+                               name="costo_siembra" placeholder="Ej: 1500.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Siembra
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Búsqueda de siembras (Demostración de Algoritmos)
+$('#formBuscar').on('submit', function(e) {
+    e.preventDefault();
+    
+    const id = $('#id_siembra_buscar').val();
+    
+    $.ajax({
+        url: '{{ url_for("buscar_siembra") }}',
+        method: 'POST',
+        data: {id_siembra: id},
+        success: function(data) {
+            let html = '';
+            if (data.encontrado) {
+                html = `
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle"></i> Siembra encontrada</h6>
+                        <hr>
+                        <p><strong>Tiempo Búsqueda Lineal:</strong> ${data.tiempo_lineal}</p>
+                        <p><strong>Tiempo Búsqueda Binaria:</strong> ${data.tiempo_binaria}</p>
+                        <p><strong>Comparaciones (Binaria):</strong> ${data.comparaciones_binaria}</p>
+                        <p class="mb-0"><strong>Mejora:</strong> 
+                            <span class="badge bg-success">${data.mejora}</span>
+                        </p>
+                    </div>
+                `;
+            } else {
+                html = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Siembra con ID ${id} no encontrada
+                    </div>
+                `;
+            }
+            $('#resultadoBusqueda').html(html);
+        },
+        error: function() {
+            $('#resultadoBusqueda').html(`
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle"></i> Error en la búsqueda
+                </div>
+            `);
+        }
+    });
+});
+</script>
+{% endblock %}

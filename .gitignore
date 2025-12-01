@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+
+# Envs
+.venv/
+venv/
+ENV/
+
+# IDE/Editor
+.vscode/
+.idea/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local configs / secrets
+AgroData/config.py
+.env
+
+# Builds
+build/
+dist/
+
+# Notebooks
+.ipynb_checkpoints/

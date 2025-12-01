@@ -1,0 +1,290 @@
+<!-- PASO 9.5: Gestión de insumos -->
+<!-- Archivo: templates/insumos.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Insumos - AgroData{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-boxes"></i> Gestión de Insumos
+            <button class="btn btn-warning float-end" data-bs-toggle="modal" data-bs-target="#modalNuevoInsumo">
+                <i class="fas fa-plus"></i> Agregar Insumo
+            </button>
+        </h1>
+    </div>
+</div>
+
+<!-- Alertas de Stock Bajo -->
+{% if alertas_stock %}
+<div class="alert alert-warning">
+    <h5><i class="fas fa-exclamation-triangle"></i> Alertas de Stock Bajo</h5>
+    <ul class="mb-0">
+        {% for alerta in alertas_stock %}
+        <li>
+            <strong>{{ alerta.nombre }}</strong> ({{ alerta.tipo }}): 
+            Solo quedan <span class="badge bg-danger">{{ alerta.cantidad }}</span> unidades
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<!-- Filtros por Tipo -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary active" onclick="filtrarInsumos('todos')">
+                Todos
+            </button>
+            <button type="button" class="btn btn-outline-success" onclick="filtrarInsumos('fertilizante')">
+                <i class="fas fa-leaf"></i> Fertilizantes
+            </button>
+            <button type="button" class="btn btn-outline-danger" onclick="filtrarInsumos('pesticida')">
+                <i class="fas fa-bug"></i> Pesticidas
+            </button>
+            <button type="button" class="btn btn-outline-warning" onclick="filtrarInsumos('herbicida')">
+                <i class="fas fa-spray-can"></i> Herbicidas
+            </button>
+            <button type="button" class="btn btn-outline-info" onclick="filtrarInsumos('semilla')">
+                <i class="fas fa-seedling"></i> Semillas
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Insumos -->
+<div class="card">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-warehouse"></i> Inventario de Insumos
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if insumos %}
+        <div class="table-responsive">
+            <table class="table table-hover" id="tablaInsumos">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Cantidad</th>
+                        <th>Unidad</th>
+                        <th>Costo Unitario</th>
+                        <th>Valor Total</th>
+                        <th>Proveedor</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for insumo in insumos %}
+                    <tr data-tipo="{{ insumo.tipo }}">
+                        <td>{{ insumo.id_insumo }}</td>
+                        <td>
+                            <strong>{{ insumo.nombre }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if insumo.tipo == 'fertilizante' %}bg-success
+                                {% elif insumo.tipo == 'pesticida' %}bg-danger
+                                {% elif insumo.tipo == 'herbicida' %}bg-warning
+                                {% elif insumo.tipo == 'semilla' %}bg-info
+                                {% else %}bg-secondary{% endif %}">
+                                {{ insumo.tipo }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if insumo.cantidad_disponible < 50 %}bg-danger
+                                {% elif insumo.cantidad_disponible < 200 %}bg-warning
+                                {% else %}bg-success{% endif %}">
+                                {{ "%.2f"|format(insumo.cantidad_disponible) }}
+                            </span>
+                        </td>
+                        <td>{{ insumo.unidad_medida }}</td>
+                        <td>${{ "%.2f"|format(insumo.costo_unitario) }}</td>
+                        <td class="fw-bold text-success">
+                            ${{ "%.2f"|format(insumo.cantidad_disponible * insumo.costo_unitario) }}
+                        </td>
+                        <td>{{ insumo.proveedor or 'N/A' }}</td>
+                        <td>
+                            {% if insumo.cantidad_disponible < 50 %}
+                                <i class="fas fa-exclamation-circle text-danger" title="Stock crítico"></i>
+                            {% elif insumo.cantidad_disponible < 200 %}
+                                <i class="fas fa-exclamation-triangle text-warning" title="Stock bajo"></i>
+                            {% else %}
+                                <i class="fas fa-check-circle text-success" title="Stock suficiente"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-info">
+                        <td colspan="6" class="text-end"><strong>Valor Total del Inventario:</strong></td>
+                        <td colspan="3" class="fw-bold text-success">
+                            ${{ "%.2f"|format(insumos|sum(attribute='cantidad_disponible')|float * 
+                                              insumos|sum(attribute='costo_unitario')|float) }}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> No hay insumos registrados en el inventario.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estadísticas de Insumos -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-boxes fa-3x text-primary mb-2"></i>
+                <h3>{{ insumos|length }}</h3>
+                <p class="text-muted mb-0">Total Insumos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-leaf fa-3x text-success mb-2"></i>
+                <h3>{{ insumos|selectattr('tipo', 'equalto', 'fertilizante')|list|length }}</h3>
+                <p class="text-muted mb-0">Fertilizantes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-bug fa-3x text-danger mb-2"></i>
+                <h3>{{ insumos|selectattr('tipo', 'equalto', 'pesticida')|list|length }}</h3>
+                <p class="text-muted mb-0">Pesticidas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-2"></i>
+                <h3>{{ alertas_stock|length }}</h3>
+                <p class="text-muted mb-0">Stock Bajo</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Nuevo Insumo -->
+<div class="modal fade" id="modalNuevoInsumo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-box"></i> Agregar Nuevo Insumo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('agregar_insumo') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Finca *</label>
+                        <select class="form-select" name="id_finca" required>
+                            <option value="">Seleccione una finca</option>
+                            {% for finca in fincas %}
+                            <option value="{{ finca.id_finca }}">
+                                {{ finca.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nombre del Insumo *</label>
+                        <input type="text" class="form-control" name="nombre" 
+                               placeholder="Ej: Urea 46%" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo *</label>
+                        <select class="form-select" name="tipo" required>
+                            <option value="">Seleccione tipo</option>
+                            <option value="fertilizante">Fertilizante</option>
+                            <option value="pesticida">Pesticida</option>
+                            <option value="herbicida">Herbicida</option>
+                            <option value="semilla">Semilla</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Cantidad *</label>
+                            <input type="number" step="0.01" class="form-control" 
+                                   name="cantidad_disponible" placeholder="Ej: 500" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Unidad *</label>
+                            <select class="form-select" name="unidad_medida" required>
+                                <option value="kg">Kilogramos (kg)</option>
+                                <option value="litro">Litros (L)</option>
+                                <option value="unidad">Unidades</option>
+                                <option value="saco">Sacos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Costo Unitario ($) *</label>
+                        <input type="number" step="0.01" class="form-control" 
+                               name="costo_unitario" placeholder="Ej: 0.85" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Proveedor</label>
+                        <input type="text" class="form-control" name="proveedor" 
+                               placeholder="Ej: AgroInsumos SA">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save"></i> Guardar Insumo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filtrar insumos por tipo
+function filtrarInsumos(tipo) {
+    const filas = document.querySelectorAll('#tablaInsumos tbody tr');
+    
+    filas.forEach(fila => {
+        if (tipo === 'todos' || fila.dataset.tipo === tipo) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+    
+    // Actualizar botones activos
+    document.querySelectorAll('.btn-group button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+</script>
+{% endblock %}

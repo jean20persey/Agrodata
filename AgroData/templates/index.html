@@ -1,0 +1,182 @@
+<!-- PASO 9.2: Dashboard principal -->
+<!-- Archivo: templates/index.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - AgroData{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt"></i> Dashboard Agrícola
+        </h1>
+    </div>
+</div>
+
+<!-- Tarjetas de Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Siembras</h6>
+                        <h2 class="mb-0">{{ stats.total_siembras }}</h2>
+                    </div>
+                    <i class="fas fa-seedling fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Siembras Activas</h6>
+                        <h2 class="mb-0">{{ stats.siembras_activas }}</h2>
+                    </div>
+                    <i class="fas fa-leaf fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Cosechas</h6>
+                        <h2 class="mb-0">{{ stats.total_cosechas }}</h2>
+                    </div>
+                    <i class="fas fa-apple-alt fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Ingresos Totales</h6>
+                        <h2 class="mb-0">${{ "%.2f"|format(stats.ingreso_total) }}</h2>
+                    </div>
+                    <i class="fas fa-dollar-sign fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertas (Cola de Prioridad - Estructura de Datos) -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-bell"></i> Alertas Prioritarias
+                    <span class="badge bg-light text-dark">Estructura: Cola de Prioridad (Heap)</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if alertas %}
+                    <div class="list-group">
+                        {% for alerta in alertas %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ alerta.mensaje }}</h6>
+                                <small class="badge 
+                                    {% if alerta.prioridad == 1 %}bg-danger
+                                    {% elif alerta.prioridad == 2 %}bg-warning
+                                    {% else %}bg-info{% endif %}">
+                                    Prioridad {{ alerta.prioridad }}
+                                </small>
+                            </div>
+                            <small class="text-muted">Siembra ID: {{ alerta.id_siembra }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-success mb-0">
+                        <i class="fas fa-check-circle"></i> No hay alertas pendientes
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico de Rendimientos (Estadística II - Matplotlib) -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar"></i> Rendimiento por Cultivo
+                    <span class="badge bg-light text-dark">Estadística II: Visualización con Matplotlib</span>
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                {% if grafico %}
+                    <img src="data:image/png;base64,{{ grafico }}" 
+                         alt="Gráfico de Rendimientos" 
+                         class="img-fluid">
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        No hay suficientes datos para generar el gráfico. 
+                        Registra cosechas para visualizar estadísticas.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enlaces Rápidos -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+                <h5>Nueva Siembra</h5>
+                <p class="text-muted">Registra una nueva siembra</p>
+                <a href="{{ url_for('listar_siembras') }}" class="btn btn-primary">
+                    <i class="fas fa-seedling"></i> Ir a Siembras
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                <h5>Ver Reportes</h5>
+                <p class="text-muted">Análisis y estadísticas</p>
+                <a href="{{ url_for('reportes') }}" class="btn btn-success">
+                    <i class="fas fa-file-alt"></i> Ver Reportes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-boxes fa-3x text-warning mb-3"></i>
+                <h5>Inventario</h5>
+                <p class="text-muted">Gestionar insumos</p>
+                <a href="{{ url_for('listar_insumos') }}" class="btn btn-warning">
+                    <i class="fas fa-warehouse"></i> Ver Insumos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

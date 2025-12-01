@@ -1,0 +1,306 @@
+<!-- PASO 9.6: Reportes y análisis avanzados -->
+<!-- Archivo: templates/reportes.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Reportes - AgroData{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-chart-line"></i> Reportes y Análisis Avanzados
+        </h1>
+        <p class="lead text-muted">
+            Análisis estadístico, proyecciones numéricas y algoritmos de optimización
+        </p>
+    </div>
+</div>
+
+<!-- SECCIÓN 1: ESTADÍSTICAS DESCRIPTIVAS -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-calculator"></i> Estadísticas Descriptivas
+            <span class="badge bg-light text-dark">Estadística II</span>
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if stats %}
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <h6 class="text-muted">Media de Rendimiento</h6>
+                    <h3 class="text-primary">{{ "%.2f"|format(stats.media) }} kg/ha</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <h6 class="text-muted">Mediana</h6>
+                    <h3 class="text-success">{{ "%.2f"|format(stats.mediana) }} kg/ha</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <h6 class="text-muted">Desviación Estándar</h6>
+                    <h3 class="text-warning">{{ "%.2f"|format(stats.desviacion_std) }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <h6 class="text-muted">Varianza</h6>
+                    <h3 class="text-info">{{ "%.2f"|format(stats.varianza) }}</h3>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-4">
+                <p><strong>Mínimo:</strong> {{ "%.2f"|format(stats.minimo) }} kg/ha</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Máximo:</strong> {{ "%.2f"|format(stats.maximo) }} kg/ha</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Total Siembras:</strong> {{ stats.total_siembras }}</p>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No hay suficientes datos para calcular estadísticas.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- SECCIÓN 2: CORRELACIÓN Y REGRESIÓN -->
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-scatter"></i> Análisis de Correlación
+            <span class="badge bg-light text-dark">Fertilizante vs Rendimiento</span>
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if correlacion %}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6>Coeficiente de Correlación de Pearson</h6>
+                <h2 class="text-success">{{ "%.4f"|format(correlacion.correlacion) }}</h2>
+                <p class="text-muted">
+                    {% if correlacion.correlacion > 0.7 %}
+                        <i class="fas fa-check-circle text-success"></i> Correlación fuerte positiva
+                    {% elif correlacion.correlacion > 0.3 %}
+                        <i class="fas fa-info-circle text-info"></i> Correlación moderada
+                    {% else %}
+                        <i class="fas fa-exclamation-circle text-warning"></i> Correlación débil
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6>R² (Coeficiente de Determinación)</h6>
+                <h2 class="text-primary">{{ "%.4f"|format(correlacion.r_cuadrado) }}</h2>
+                <p class="text-muted">
+                    {{ "%.1f"|format(correlacion.r_cuadrado * 100) }}% de la variabilidad explicada
+                </p>
+            </div>
+        </div>
+        
+        {% if grafico_correlacion %}
+        <div class="text-center">
+            <img src="data:image/png;base64,{{ grafico_correlacion }}" 
+                 alt="Gráfico de Correlación" 
+                 class="img-fluid">
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No hay suficientes datos para análisis de correlación.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- SECCIÓN 3: RANKING DE LOTES -->
+<div class="card mb-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-trophy"></i> Ranking de Mejores Lotes
+            <span class="badge bg-dark">Algoritmos: QuickSort</span>
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if ranking %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Posición</th>
+                        <th>Lote</th>
+                        <th>Rendimiento Promedio (kg/ha)</th>
+                        <th>Total Siembras</th>
+                        <th>Clasificación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lote in ranking %}
+                    <tr>
+                        <td>
+                            {% if loop.index == 1 %}
+                                <i class="fas fa-medal text-warning fa-2x"></i>
+                            {% elif loop.index == 2 %}
+                                <i class="fas fa-medal text-secondary fa-2x"></i>
+                            {% elif loop.index == 3 %}
+                                <i class="fas fa-medal text-danger fa-2x"></i>
+                            {% else %}
+                                {{ loop.index }}
+                            {% endif %}
+                        </td>
+                        <td><strong>{{ lote.lote }}</strong></td>
+                        <td>{{ "%.2f"|format(lote.rendimiento) }}</td>
+                        <td>{{ lote.total_siembras }}</td>
+                        <td>
+                            {% if loop.index <= 2 %}
+                                <span class="badge bg-success">Excelente</span>
+                            {% elif loop.index <= 4 %}
+                                <span class="badge bg-info">Bueno</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Regular</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No hay datos suficientes para generar ranking.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- SECCIÓN 4: PROYECCIÓN DE PRODUCCIÓN -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-area"></i> Proyección de Producción
+            <span class="badge bg-light text-dark">Métodos Numéricos: Interpolación</span>
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if proyeccion %}
+        <p class="text-muted">Estimación basada en datos históricos usando interpolación cúbica</p>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="table-info">
+                    <tr>
+                        <th>Días desde Siembra</th>
+                        <th>Producción Estimada (kg)</th>
+                        <th>Tendencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set max_kg = proyeccion|map(attribute='kg_estimado')|max %}
+                    {% for p in proyeccion %}
+                    <tr>
+                        <td><strong>{{ p.dia }} días</strong></td>
+                        <td>{{ "%.2f"|format(p.kg_estimado) }} kg</td>
+                        <td>
+                            <div class="progress">
+                                {% set porcentaje = ((p.kg_estimado / max_kg * 100)|int if max_kg > 0 else 0) %}
+                                <div class="progress-bar bg-success" data-width="{{ porcentaje }}"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Se necesitan al menos 3 cosechas para generar proyecciones.
+        </div>
+        {% endif %}
+    </div>
+</div>
+ 
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-balance-scale"></i> Punto de Equilibrio
+                <span class="badge bg-light text-dark">Métodos Numéricos: Bisección</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if punto_equilibrio %}
+            <div class="alert alert-success">
+                <h4 class="alert-heading">
+                    <i class="fas fa-check-circle"></i> Análisis de Punto de Equilibrio
+                </h4>
+                <hr>
+                <p class="mb-0">
+                    Necesitas producir al menos <strong>{{ "%.2f"|format(punto_equilibrio) }} kg</strong> 
+                    para cubrir los costos de producción y alcanzar el punto de equilibrio.
+                </p>
+            </div>
+            <p class="text-muted">
+                <i class="fas fa-info-circle"></i> 
+                Calculado usando el método de bisección para resolver la ecuación: Ingresos - Costos = 0
+            </p>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No hay datos suficientes para calcular punto de equilibrio.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Resumen de Materias Aplicadas -->
+    <div class="card bg-light">
+        <div class="card-body">
+            <h5><i class="fas fa-graduation-cap"></i> Materias Aplicadas en este Reporte</h5>
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <i class="fas fa-chart-bar fa-3x text-primary mb-2"></i>
+                        <h6>Estadística II</h6>
+                        <small class="text-muted">Media, mediana, correlación, regresión</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <i class="fas fa-project-diagram fa-3x text-success mb-2"></i>
+                        <h6>Estructura de Datos</h6>
+                        <small class="text-muted">Listas, árboles, colas de prioridad</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <i class="fas fa-calculator fa-3x text-info mb-2"></i>
+                        <h6>Métodos Numéricos</h6>
+                        <small class="text-muted">Interpolación, bisección</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <i class="fas fa-sort-amount-down fa-3x text-warning mb-2"></i>
+                        <h6>Algoritmos</h6>
+                        <small class="text-muted">QuickSort, búsqueda binaria</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.progress-bar[data-width]').forEach(function (el) {
+        var v = parseFloat(el.getAttribute('data-width'));
+        if (!isNaN(v)) {
+          el.style.width = v + '%';
+        }
+      });
+    });
+    </script>
+    {% endblock %}

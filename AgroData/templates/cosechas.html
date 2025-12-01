@@ -1,0 +1,138 @@
+<!-- PASO 9.4: Gestión de cosechas -->
+<!-- Archivo: templates/cosechas.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Cosechas - AgroData{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-apple-alt"></i> Registro de Cosechas
+            <button class="btn btn-success float-end" data-bs-toggle="modal" data-bs-target="#modalNuevaCosecha">
+                <i class="fas fa-plus"></i> Registrar Cosecha
+            </button>
+        </h1>
+    </div>
+</div>
+
+<!-- Tabla de Cosechas -->
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-list"></i> Historial de Cosechas
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if cosechas %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cultivo</th>
+                        <th>Lote</th>
+                        <th>Fecha Siembra</th>
+                        <th>Fecha Cosecha</th>
+                        <th>Cantidad (kg)</th>
+                        <th>Rendimiento (kg/ha)</th>
+                        <th>Ingreso Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cosecha in cosechas %}
+                    <tr>
+                        <td>{{ cosecha.id_cosecha }}</td>
+                        <td>{{ cosecha.cultivo }}</td>
+                        <td>{{ cosecha.lote }}</td>
+                        <td>{{ cosecha.fecha_siembra }}</td>
+                        <td>{{ cosecha.fecha_cosecha }}</td>
+                        <td>{{ "%.2f"|format(cosecha.cantidad_kg) }}</td>
+                        <td>
+                            <span class="badge bg-info">
+                                {{ "%.2f"|format(cosecha.rendimiento) }}
+                            </span>
+                        </td>
+                        <td class="text-success fw-bold">
+                            ${{ "%.2f"|format(cosecha.ingreso_total) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> No hay cosechas registradas.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal: Nueva Cosecha -->
+<div class="modal fade" id="modalNuevaCosecha" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-apple-alt"></i> Registrar Cosecha
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('agregar_cosecha') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Siembra *</label>
+                        <select class="form-select" name="id_siembra" required>
+                            <option value="">Seleccione una siembra</option>
+                            {% for siembra in siembras %}
+                            <option value="{{ siembra.id_siembra }}">
+                                {{ siembra.descripcion }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Cosecha *</label>
+                        <input type="date" class="form-control" name="fecha_cosecha" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cantidad Cosechada (kg) *</label>
+                        <input type="number" step="0.01" class="form-control" 
+                               name="cantidad_kg" placeholder="Ej: 4500.00" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Calidad (%)</label>
+                        <input type="number" step="0.01" class="form-control" 
+                               name="calidad_porcentaje" placeholder="Ej: 92.5" value="100">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Precio de Venta por kg ($) *</label>
+                        <input type="number" step="0.01" class="form-control" 
+                               name="precio_venta_kg" placeholder="Ej: 0.45" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea class="form-control" name="observaciones" rows="3" 
+                                  placeholder="Notas adicionales..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Guardar Cosecha
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
