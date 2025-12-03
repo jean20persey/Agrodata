@@ -73,7 +73,7 @@
                         <th>Tipo</th>
                         <th>Cantidad</th>
                         <th>Unidad</th>
-                        <th>Costo Unitario</th>
+                        <th>Costo Unitario (Bs)</th>
                         <th>Valor Total</th>
                         <th>Proveedor</th>
                         <th>Estado</th>
@@ -105,9 +105,9 @@
                             </span>
                         </td>
                         <td>{{ insumo.unidad_medida }}</td>
-                        <td>${{ "%.2f"|format(insumo.costo_unitario) }}</td>
+                        <td>Bs {{ "%.2f"|format(insumo.costo_unitario) }}</td>
                         <td class="fw-bold text-success">
-                            ${{ "%.2f"|format(insumo.cantidad_disponible * insumo.costo_unitario) }}
+                            Bs {{ "%.2f"|format(insumo.cantidad_disponible * insumo.costo_unitario) }}
                         </td>
                         <td>{{ insumo.proveedor or 'N/A' }}</td>
                         <td>
@@ -124,9 +124,9 @@
                 </tbody>
                 <tfoot>
                     <tr class="table-info">
-                        <td colspan="6" class="text-end"><strong>Valor Total del Inventario:</strong></td>
+                        <td colspan="6" class="text-end"><strong>Valor Total del Inventario (Bs):</strong></td>
                         <td colspan="3" class="fw-bold text-success">
-                            ${{ "%.2f"|format(insumos|sum(attribute='cantidad_disponible')|float * 
+                            Bs {{ "%.2f"|format(insumos|sum(attribute='cantidad_disponible')|float * 
                                               insumos|sum(attribute='costo_unitario')|float) }}
                         </td>
                     </tr>
@@ -241,7 +241,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Costo Unitario ($) *</label>
+                        <label class="form-label">Costo Unitario (Bs) *</label>
                         <input type="number" step="0.01" class="form-control" 
                                name="costo_unitario" placeholder="Ej: 0.85" required>
                     </div>

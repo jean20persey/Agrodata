@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Iniciar Sesión - AgroData{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-header bg-success text-white d-flex align-items-center">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="AgroData" height="22" class="me-2">
+        <h5 class="mb-0"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</h5>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Contraseña</label>
+            <input type="password" name="password" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-success w-100">Ingresar</button>
+        </form>
+        <div class="text-center mt-3">
+          <small>¿No tienes cuenta? <a href="{{ url_for('register') }}">Regístrate</a></small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -23,8 +23,9 @@
     <!-- Navegación -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-success">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-seedling"></i> AgroData
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="AgroData" height="24" class="me-2">
+                <span>AgroData</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -51,11 +52,35 @@
                             <i class="fas fa-boxes"></i> Insumos
                         </a>
                     </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('listar_fincas') }}">
+                            <i class="fas fa-tractor"></i> Fincas
+                        </a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('reportes') }}">
                             <i class="fas fa-chart-line"></i> Reportes
                         </a>
                     </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item d-flex align-items-center me-2 text-white-50">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span class="navbar-text small">{{ current_user.nombre or current_user.email }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -83,7 +108,7 @@
     <!-- Footer -->
     <footer class="bg-light text-center text-muted py-3 mt-5">
         <p class="mb-0">
-            <i class="fas fa-database"></i> AgroData 2024 - Sistema de Gestión Agrícola
+            <i class="fas fa-database"></i> AgroData 2025 - Sistema de Gestión Agrícola
         </p>
         <small>
             Base de Datos | Estadística | Estructuras de Datos | Métodos Numéricos | Algoritmos

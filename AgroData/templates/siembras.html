@@ -91,7 +91,16 @@
                             </span>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-info" title="Ver detalles">
+                            <button 
+                                class="btn btn-sm btn-info btnVerSiembra" 
+                                title="Ver detalles"
+                                data-id="{{ siembra.id_siembra }}"
+                                data-lote="{{ siembra.lote }}"
+                                data-cultivo="{{ siembra.cultivo }}"
+                                data-fecha="{{ siembra.fecha_siembra }}"
+                                data-area="{{ "%.2f"|format(siembra.area_sembrada) }}"
+                                data-estado="{{ siembra.estado }}"
+                            >
                                 <i class="fas fa-eye"></i>
                             </button>
                         </td>
@@ -162,7 +171,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Costo de Siembra ($)</label>
+                        <label class="form-label">Costo de Siembra (Bs)</label>
                         <input type="number" step="0.01" class="form-control" 
                                name="costo_siembra" placeholder="Ej: 1500.00">
                     </div>
@@ -176,6 +185,37 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Detalle de Siembra -->
+<div class="modal fade" id="modalDetalleSiembra" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-eye"></i> Detalle de Siembra</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">ID</dt>
+                    <dd class="col-sm-8" id="detId"></dd>
+                    <dt class="col-sm-4">Lote</dt>
+                    <dd class="col-sm-8" id="detLote"></dd>
+                    <dt class="col-sm-4">Cultivo</dt>
+                    <dd class="col-sm-8" id="detCultivo"></dd>
+                    <dt class="col-sm-4">Fecha Siembra</dt>
+                    <dd class="col-sm-8" id="detFecha"></dd>
+                    <dt class="col-sm-4">Área (ha)</dt>
+                    <dd class="col-sm-8" id="detArea"></dd>
+                    <dt class="col-sm-4">Estado</dt>
+                    <dd class="col-sm-8" id="detEstado"></dd>
+                </dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
         </div>
     </div>
 </div>
@@ -196,16 +236,28 @@ $('#formBuscar').on('submit', function(e) {
         success: function(data) {
             let html = '';
             if (data.encontrado) {
+                const det = data.siembra || {};
                 html = `
                     <div class="alert alert-success">
                         <h6><i class="fas fa-check-circle"></i> Siembra encontrada</h6>
                         <hr>
-                        <p><strong>Tiempo Búsqueda Lineal:</strong> ${data.tiempo_lineal}</p>
-                        <p><strong>Tiempo Búsqueda Binaria:</strong> ${data.tiempo_binaria}</p>
-                        <p><strong>Comparaciones (Binaria):</strong> ${data.comparaciones_binaria}</p>
-                        <p class="mb-0"><strong>Mejora:</strong> 
-                            <span class="badge bg-success">${data.mejora}</span>
-                        </p>
+                        <div class="row">
+                          <div class="col-md-6">
+                            <p class="mb-1"><strong>ID:</strong> ${det.id_siembra ?? ''}</p>
+                            <p class="mb-1"><strong>Lote:</strong> ${det.lote ?? ''}</p>
+                            <p class="mb-1"><strong>Cultivo:</strong> ${det.cultivo ?? ''}</p>
+                          </div>
+                          <div class="col-md-6">
+                            <p class="mb-1"><strong>Fecha Siembra:</strong> ${det.fecha_siembra ?? ''}</p>
+                            <p class="mb-1"><strong>Área (ha):</strong> ${(det.area_sembrada ?? '').toString()}</p>
+                            <p class="mb-1"><strong>Estado:</strong> ${det.estado ?? ''}</p>
+                          </div>
+                        </div>
+                        <hr>
+                        <p class="mb-1"><strong>Tiempo Búsqueda Lineal:</strong> ${data.tiempo_lineal}</p>
+                        <p class="mb-1"><strong>Tiempo Búsqueda Binaria:</strong> ${data.tiempo_binaria}</p>
+                        <p class="mb-1"><strong>Comparaciones (Binaria):</strong> ${data.comparaciones_binaria}</p>
+                        <p class="mb-0"><strong>Mejora:</strong> <span class="badge bg-success">${data.mejora}</span></p>
                     </div>
                 `;
             } else {
@@ -226,6 +278,19 @@ $('#formBuscar').on('submit', function(e) {
             `);
         }
     });
+});
+
+// Ver detalle de siembra
+$(document).on('click', '.btnVerSiembra', function() {
+    const btn = $(this);
+    $('#detId').text(btn.data('id'));
+    $('#detLote').text(btn.data('lote'));
+    $('#detCultivo').text(btn.data('cultivo'));
+    $('#detFecha').text(btn.data('fecha'));
+    $('#detArea').text(btn.data('area'));
+    $('#detEstado').text(btn.data('estado'));
+    const modal = new bootstrap.Modal(document.getElementById('modalDetalleSiembra'));
+    modal.show();
 });
 </script>
 {% endblock %}

@@ -19,7 +19,7 @@ class EstadisticasAgricolas:
     def __init__(self, conexion):
         self.conexion = conexion
     
-    def estadisticas_descriptivas(self):
+    def estadisticas_descriptivas(self, user_id=None):
         """
         Calcula media, mediana, desviación estándar y varianza
         de los rendimientos por hectárea.
@@ -33,11 +33,13 @@ class EstadisticasAgricolas:
             FROM siembra s
             JOIN cultivo c ON s.id_cultivo = c.id_cultivo
             LEFT JOIN cosecha co ON s.id_siembra = co.id_siembra
-            WHERE s.area_sembrada > 0
+            JOIN lote l ON s.id_lote = l.id_lote
+            JOIN finca f ON l.id_finca = f.id_finca
+            WHERE s.area_sembrada > 0 {user_filter}
             GROUP BY s.id_siembra
-        """
+        """.format(user_filter=("AND f.user_id = %s" if user_id is not None else ""))
         
-        df = pd.read_sql(query, self.conexion)
+        df = pd.read_sql(query, self.conexion, params=[user_id] if user_id is not None else None)
         
         if len(df) == 0:
             return None
@@ -55,7 +57,7 @@ class EstadisticasAgricolas:
         
         return estadisticas
     
-    def correlacion_insumo_rendimiento(self):
+    def correlacion_insumo_rendimiento(self, user_id=None):
         """
         Calcula la correlación de Pearson entre cantidad de fertilizante
         aplicado y rendimiento obtenido.
@@ -70,12 +72,14 @@ class EstadisticasAgricolas:
             LEFT JOIN aplicacion_insumo ai ON s.id_siembra = ai.id_siembra
             LEFT JOIN insumo i ON ai.id_insumo = i.id_insumo AND i.tipo = 'fertilizante'
             LEFT JOIN cosecha co ON s.id_siembra = co.id_siembra
-            WHERE s.area_sembrada > 0
+            JOIN lote l ON s.id_lote = l.id_lote
+            JOIN finca f ON l.id_finca = f.id_finca
+            WHERE s.area_sembrada > 0 {user_filter}
             GROUP BY s.id_siembra
             HAVING fertilizante_total > 0 AND rendimiento > 0
-        """
+        """.format(user_filter=("AND f.user_id = %s" if user_id is not None else ""))
         
-        df = pd.read_sql(query, self.conexion)
+        df = pd.read_sql(query, self.conexion, params=[user_id] if user_id is not None else None)
         
         if len(df) < 2:
             return None
@@ -97,7 +101,7 @@ class EstadisticasAgricolas:
             'datos': df.to_dict('records')
         }
     
-    def generar_grafico_rendimientos(self):
+    def generar_grafico_rendimientos(self, user_id=None):
         """
         Genera gráfico de barras con rendimiento por cultivo.
         Demuestra: Visualización con Matplotlib
@@ -109,11 +113,13 @@ class EstadisticasAgricolas:
             FROM siembra s
             JOIN cultivo c ON s.id_cultivo = c.id_cultivo
             JOIN cosecha co ON s.id_siembra = co.id_siembra
-            WHERE s.area_sembrada > 0
+            JOIN lote l ON s.id_lote = l.id_lote
+            JOIN finca f ON l.id_finca = f.id_finca
+            WHERE s.area_sembrada > 0 {user_filter}
             GROUP BY c.id_cultivo
-        """
+        """.format(user_filter=("AND f.user_id = %s" if user_id is not None else ""))
         
-        df = pd.read_sql(query, self.conexion)
+        df = pd.read_sql(query, self.conexion, params=[user_id] if user_id is not None else None)
         
         if len(df) == 0:
             return None
@@ -135,12 +141,12 @@ class EstadisticasAgricolas:
         
         return grafico_url
     
-    def generar_grafico_correlacion(self):
+    def generar_grafico_correlacion(self, user_id=None):
         """
         Genera gráfico de dispersión mostrando correlación
         entre fertilizante y rendimiento.
         """
-        datos = self.correlacion_insumo_rendimiento()
+        datos = self.correlacion_insumo_rendimiento(user_id=user_id)
         
         if not datos:
             return None

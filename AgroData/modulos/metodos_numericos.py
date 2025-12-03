@@ -47,11 +47,36 @@ class MetodosNumericos:
         """
         if len(fechas) < 3:
             return None
-        
-        # Crear función de interpolación cúbica
-        f_cubica = interpolate.interp1d(fechas, producciones, kind='cubic', 
-                                        fill_value='extrapolate')
-        
+
+        # 1) Agregar puntos con el mismo día (x) promediando su producción (y)
+        #    y ordenar por día para cumplir requisitos de interp1d
+        acumulado = {}
+        conteo = {}
+        for x, y in zip(fechas, producciones):
+            if x is None or y is None:
+                continue
+            x = float(x)
+            y = float(y)
+            acumulado[x] = acumulado.get(x, 0.0) + y
+            conteo[x] = conteo.get(x, 0) + 1
+
+        if not acumulado:
+            return None
+
+        x_uniq = sorted(acumulado.keys())
+        y_uniq = [acumulado[x] / conteo[x] for x in x_uniq]
+
+        # 2) Si hay menos de 3 puntos únicos, usar aproximación más simple
+        if len(x_uniq) < 3:
+            try:
+                # Interpolación lineal con numpy
+                estim = float(np.interp(fecha_nueva, x_uniq, y_uniq))
+                return max(0, estim)
+            except Exception:
+                return None
+
+        # 3) Interpolación cúbica con puntos únicos y ordenados
+        f_cubica = interpolate.interp1d(x_uniq, y_uniq, kind='cubic', fill_value='extrapolate')
         estimacion = float(f_cubica(fecha_nueva))
         return max(0, estimacion)
     
